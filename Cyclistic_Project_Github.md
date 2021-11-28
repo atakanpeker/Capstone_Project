@@ -611,7 +611,7 @@ all_trips_v2 %>%
 
     ## `summarise()` has grouped output by 'member_casual'. You can override using the `.groups` argument.
 
-![](<Cyclistic_Project_Github_files/figure-gfm/unnamed-chunk-18-1.png>)
+![](Cyclistic_Project_Github_files/figure-gfm/unnamed-chunk-18-1.png)
 
 We can clearly see that on weekends, casual riders are using the service
 much more than annual members. On weekdays, annual members using
@@ -637,7 +637,7 @@ all_trips_v2 %>%
 
     ## `summarise()` has grouped output by 'member_casual'. You can override using the `.groups` argument.
 
-![](Cyclistic_Project_Github_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](Cyclistic_Project_Github_files/figure-gfm/unnamed-chunk-19-1.png)
 
 In this graph, we can see that casual riders always spent much more time
 than annual members. From this graph, we may claim that annual members
