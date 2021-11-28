@@ -7,4 +7,4 @@ My business task is to analyse previous 12 months of bike trip data of Cyclistic
 
 This project includes the R file, R markdown file, github document, and two graph images.
 
-To read my Capstone Project report, please click on Cyclistic_Project_Github.md.
+To read my Capstone Project report, please click on the github document called "Cyclistic_Project_Github.md".
