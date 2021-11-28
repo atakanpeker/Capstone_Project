@@ -611,7 +611,7 @@ all_trips_v2 %>%
 
     ## `summarise()` has grouped output by 'member_casual'. You can override using the `.groups` argument.
 
-![](Cyclistic_Project_Github_files/figure-gfm/unnamed-chunk-18-1.png?raw=true)<!-- -->
+![](Cyclistic_Project_Github_files/figure-gfm/unnamed-chunk-18-1.png?raw=true)
 
 We can clearly see that on weekends, casual riders are using the service
 much more than annual members. On weekdays, annual members using
