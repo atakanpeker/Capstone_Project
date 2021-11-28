@@ -1,0 +1,281 @@
+---
+title: "Cyclistic Project"
+author: "Atakan Peker"
+date: "28/11/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Google Data Analytics Capstone Project
+
+### About
+
+  This is my Capstone project of Google Data Analytics Professional Certificate program. This program gave me a data about a fictional company called "Cyclistic". It is a bike-share company that has casual riders and annual members. The team wants to design a new marketing strategy to convert the casual riders into annual members because the annual members are much more profitable than casual riders.
+  
+  Cyclistic has 5824 bicycles and 692 stations across Chicago. The pricing plans are single-ride passes, full-day passes for casual riders, and annual memberships for cyclistic members. The company claims that the key for future growth is maximizing the number of annual members.
+  
+  My business task is to analyse previous 12 months of bike trip data of Cyclistic and identify trends to answer how annual members and casual riders differ. To do that, the case study gave me some bullet points, such as finding the average duration and day of week as mentioned in the below.
+  
+  Using tidyverse, lubridate, and ggplot2 packages.
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+```
+
+  Setting my working directory to read the csv files.
+
+```{r, eval=FALSE}
+getwd()
+setwd("C:/Users/lenovo/Desktop/Google Data Analytics Certificate/My Capstone Project/Cyclistic_tripdata/Cyclistic_tripdata_csv")
+```
+
+### Collecting the data
+
+  Reading and Assigning each csv files.
+
+```{r}
+m11_2020 <- read.csv("202011-divvy-tripdata.csv")
+m12_2020 <- read.csv("202012-divvy-tripdata.csv")
+m01_2021 <- read.csv("202101-divvy-tripdata.csv")
+m02_2021 <- read.csv("202102-divvy-tripdata.csv")
+m03_2021 <- read.csv("202103-divvy-tripdata.csv")
+m04_2021 <- read.csv("202104-divvy-tripdata.csv")
+m05_2021 <- read.csv("202105-divvy-tripdata.csv")
+m06_2021 <- read.csv("202106-divvy-tripdata.csv")
+m07_2021 <- read.csv("202107-divvy-tripdata.csv")
+m08_2021 <- read.csv("202108-divvy-tripdata.csv")
+m09_2021 <- read.csv("202109-divvy-tripdata.csv")
+m10_2021 <- read.csv("202110-divvy-tripdata.csv")
+```
+
+### Wrangle Data and Combine into a Single File
+
+  Inspecting the column names of each data.
+
+```{r, eval=FALSE}
+colnames(m11_2020)
+colnames(m12_2020)
+colnames(m01_2021)
+colnames(m02_2021)
+colnames(m03_2021)
+colnames(m04_2021)
+colnames(m05_2021)
+colnames(m06_2021)
+colnames(m07_2021)
+colnames(m08_2021)
+colnames(m09_2021)
+colnames(m10_2021)
+```
+
+  Looking at the data types of each data.
+
+```{r}
+str(m11_2020)
+str(m12_2020)
+str(m01_2021)
+str(m02_2021)
+str(m03_2021)
+str(m04_2021)
+str(m05_2021)
+str(m06_2021)
+str(m07_2021)
+str(m08_2021)
+str(m09_2021)
+str(m10_2021)
+```
+
+  Every column name is consistent with each other. However, there are some other inconsistencies. 
+  
+  in 2020 November, as m11_2020, the format of "started_at" and "ended_at" are different from the rest of data. So this code changed it:
+
+```{r}
+m11_2020$started_at <- strptime(m11_2020$started_at, format = "%d/%m/%Y %H:%M")
+m11_2020$started_at <- format(m11_2020$started_at, "%Y-%m-%d %H:%M:%S")
+
+m11_2020$ended_at <- strptime(m11_2020$ended_at, format = "%d/%m/%Y %H:%M")
+m11_2020$ended_at <- format(m11_2020$ended_at, "%Y-%m-%d %H:%M:%S")
+
+```
+  Warning: m11_2020 does not include the seconds in datetime, so we assumed that as HH:MM:00. You can see the ride length of m11_2020 as seconds of a full minutes, such as 60, 120, 720 seconds, etc.
+  
+  The other inconsistency was about data type. In m11_2020 "start_station_id" and "end_station_id" are classified as integers, so they are classified as character to make all of 12 months' data consistent with each other.
+
+```{r}
+m11_2020 <- mutate(m11_2020, start_station_id = as.character(start_station_id),
+                   end_station_id = as.character(end_station_id))
+```
+
+  Now, we can finally combine all 12 data into a single big data frame called "all_trips".
+
+```{r}
+all_trips <- bind_rows(m11_2020, m12_2020, m01_2021, m02_2021, m03_2021, m04_2021,
+                       m05_2021, m06_2021, m07_2021, m08_2021, m09_2021, m10_2021)
+```
+
+
+### Clean up and Add Data to Prepare Analysis
+
+
+  To analyze the whole data, looking at the all_trips to check whether there is a problem or not.
+
+```{r, eval=FALSE}
+colnames(all_trips)
+nrow(all_trips)
+dim(all_trips)
+str(all_trips)
+head(all_trips)
+```
+
+  You can see it here as summarized:
+
+```{r}
+summary(all_trips)
+```
+
+  Finding the average duration that the riders are using the bicycle. To begin with, we needed to calculate ride length of every consumption.
+  
+  To find the ride length, the lubridate package is used to get the large POSIXct data of "started_at" and "ended_at". Then, difftime function is used to find the ride length and assign it as a new column of our all_trips data. (The units of ride_length are by seconds.)
+
+```{r}
+starttime <- ymd_hms(all_trips$started_at)
+endtime <- ymd_hms(all_trips$ended_at)
+
+all_trips$ride_length <- difftime(endtime, starttime, units = "secs")
+all_trips$ride_length <- as.numeric(as.character(all_trips$ride_length))
+``` 
+
+  Also, we wanted to analyse the trend by looking at the day of week the riders used the bicycle.
+  
+  Therefore, a new column named "day_of_week" is created so that we can have much more detailed graph and maybe we can find a relation in there.
+  
+```{r}
+all_trips$day_of_week <- format(as.Date(as.Date(all_trips$started_at)), "%A")
+```
+
+  There are some negative values of ride_length in the data, about 829 rows. Since it is impossible, they are deleted from our data set through creating a new version of our dataframe (v2).
+
+```{r}
+negative_ride_length <- filter(all_trips, ride_length < 0)
+
+all_trips_v2 <- filter(all_trips, ride_length >= 0)
+
+summary(all_trips_v2$ride_length)
+```
+
+### Descriptive Analysis
+
+  The analysis is based on "ride_length", "day_of_week", and "member_casual". 
+  
+  Gathering these columns into a table, but first we need to compare members and casual users by ride_length.
+
+```{r}
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual, FUN = mean)
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual, FUN = median)
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual, FUN = max)
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual, FUN = min)
+```
+
+  After that, "day_of_week" column is included as well. To look at the average duration by rider type(member and casual users) of each day, run this code:
+
+```{r}
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual + 
+            all_trips_v2$day_of_week, FUN = mean)
+```
+
+  We can see that data is not ordered by "day_of_week", so the whole data is ordered and run the aforementioned aggregate function again.
+  
+```{r}
+all_trips_v2$day_of_week <- factor(all_trips_v2$day_of_week,
+                                   levels = c("Sunday", "Monday", "Tuesday", "Wednesday",
+                                              "Thursday", "Friday", "Saturday"), ordered = TRUE)
+
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual + 
+            all_trips_v2$day_of_week, FUN = mean)
+```
+
+Before visualizing the data, we analyse the number of rides and average duration of these rides by rider type and day of week, then we summarise and arrange it through this code:
+
+```{r}
+all_trips_v2 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>%
+  group_by(member_casual, weekday) %>%
+  summarise(number_of_rides = n(),
+            average_duration = mean(ride_length)) %>%
+  arrange(member_casual, weekday)
+```
+
+### Plots
+
+Now we can visualize this analysis. Let's visualize the number of rides by rider type.
+
+```{r}
+all_trips_v2 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>%
+  group_by(member_casual, weekday) %>%
+  summarise(number_of_rides = n(),
+            average_duration = mean(ride_length)) %>%
+  arrange(member_casual, weekday) %>%
+  ggplot(aes(x = weekday, y = number_of_rides, fill = member_casual)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c("#0072B2", "#D55E00")) +
+  labs(title = "Number of Rides by Rider Type",
+       x = "Weekday", y = "Number of Rides",
+       fill = "Rider Type") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+  We can clearly see that on weekends, casual riders are using the service much more than annual members. On weekdays, annual members using bicycles much more than casual riders.
+
+Let's create another visualization:The average duration by rider type.
+
+```{r}
+all_trips_v2 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>%
+  group_by(member_casual, weekday) %>%
+  summarise(number_of_rides = n(),
+            average_duration = mean(ride_length)) %>%
+  arrange(member_casual, weekday) %>%
+  ggplot(aes(x = weekday, y = average_duration, fill = member_casual)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c("#009E73", "#CC79A7")) +
+  labs(title = "Average Duration by Rider Type",
+       x = "Weekday", y = "Average Duration",
+       fill = "Rider Type") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+  In this graph, we can see that casual riders always spent much more time than annual members. From this graph, we may claim that annual members are more likely to use the bicycles for commuting work each day rather than riding for leisure.
+
+ Last but not least, we create an csv file of summary file that we may use for further analysis. We can visualize it in Excel, Tableau, or any presentation software.
+
+```{r}
+aggregate_data <- aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual +
+                      all_trips_v2$day_of_week, FUN = mean)
+
+write.csv(aggregate_data, file = "C:/Users/lenovo/Desktop/Google Data Analytics Certificate/My Capstone Project/avg_ride_length.csv")
+```
+
+### Conclusion
+
+  This report is about analysing the fictional company's bike trip data. With the findings of the analysis, this report has recommendations to attract casual riders and convert them annual members.
+  
+  - Creating another type of memberships, such as monthly, 3 months, or 6 months membership. Users may be reluctant to have annual membership, so they choose to get single-ride or full-day passes.
+  - Changing the settings of the pricing plan to show the users that memberships would be much cheaper than buying passes. Maybe making the memberships cheaper or price of single-ride or full-day passes may differ according to the duration of the rides.
+  
+  - Facilitating another services for members only. The company provide discount coupons, 7/24 digital assistance, or custom-made bicycles only to the members.
+  
+  Even though this is a fictional case study, it may inspire us to solve real-life problems. Thank you for reading!
+  
+
+  
+
+
+
+
+
+
