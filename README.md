@@ -1,1 +1,0 @@
-# atakanpeker.github.io
