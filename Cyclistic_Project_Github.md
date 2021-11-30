@@ -675,4 +675,4 @@ attract casual riders and convert them annual members.
     only to the members.
 
 Even though this is a fictional case study, it may inspire us to solve
-real-life problems. Thank you for reading!
+real-life problems.
