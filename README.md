@@ -9,9 +9,10 @@ This project includes the R file, R markdown file, github document, and two grap
 
 To read my Capstone Project report, please click on the github document called "Cyclistic_Project_Github.md".
 
-# Code and Resources Used
+## Code and Resources Used
 
 **R version:** 4.1.2
+
 **Packages:** Tidyverse, Lubridate, ggplot2
 
 ## Data Wrangling
