@@ -1,4 +1,4 @@
-# Cyclistic Project
+## Cyclistic Project
 
 This is my Capstone project of Google Data Analytics Professional Certificate program. 
 This program gave me a data about a fictional company called "Cyclistic". 
